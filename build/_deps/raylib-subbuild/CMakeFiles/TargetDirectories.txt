@@ -1,0 +1,3 @@
+C:/Users/vbarr/SolarCorp2.0/build/_deps/raylib-subbuild/CMakeFiles/raylib-populate.dir
+C:/Users/vbarr/SolarCorp2.0/build/_deps/raylib-subbuild/CMakeFiles/edit_cache.dir
+C:/Users/vbarr/SolarCorp2.0/build/_deps/raylib-subbuild/CMakeFiles/rebuild_cache.dir

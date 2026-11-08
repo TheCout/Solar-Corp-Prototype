@@ -1,0 +1,5 @@
+CompileFlags:
+  CompilationDatabase: "build"
+  Add:
+    - "-xc"
+    - "-Ibuild/_deps/raylib-src/src" # Tells Zed where raylib's headers live
