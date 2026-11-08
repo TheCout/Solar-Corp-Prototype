@@ -41,4 +41,10 @@ vec2d vec2d_scalar(vec2d v, double scalar);
 #define VEC2F_ZERO ((vec2f){0})
 #define VEC2D_ZERO ((vec2d){0})
 
+#define MAX(a, b) ({ \
+    typeof(a) _a = (a); \
+    typeof(b) _b = (b); \
+    _a > _b ? _a : _b; \
+})
+
 #endif

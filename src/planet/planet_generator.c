@@ -18,9 +18,10 @@ float get_circular_noise(float radians, float frequency) {
 }
 
 float get_terrain_noise(float radians) {
+
     float noise1 = get_circular_noise(radians, 8) * 0.5;
     float noise2 = get_circular_noise(radians, 14) * 0.3;
-    float noise3 = get_circular_noise(radians, noise2 * 10) * 0.15;
+    float noise3 = get_circular_noise(radians, noise2 * 40) * 0.15;
     float noise4 = get_circular_noise(radians, (noise3+noise2) * 200) * 0.042;
     return noise1 + noise2 + noise3 + noise4;
 }
@@ -29,10 +30,13 @@ float get_terrain_height(float radians, float radius, float amplitude, int lod) 
     float full_noise = get_terrain_noise(radians);
     switch (lod) {
         case 1:
-            full_noise += get_circular_noise(radians, 1000 / full_noise) * 0.04;
+            full_noise += get_circular_noise(radians, 300) * 0.08;
+            break;
         case 0:
-            full_noise += get_circular_noise(radians, 200 * full_noise) * 0.09;
-    }
+            full_noise += get_circular_noise(radians, 300) * 0.08;
+            full_noise += get_circular_noise(radians, 2500 * (1.f - full_noise)) * full_noise * 0.0013;
+            break;
+            }
     return radius + amplitude * full_noise;
 }
 
@@ -54,12 +58,18 @@ int planet_generate_2dmesh(
     vec2d* uvs,
     vec2d* origin_pos) {
 
-    float amplitude = body.radius1 - body.radius0;
+    // Rail system (Divide circle into multiple small angles defined by the resolution)
+    // * Resolution is defined by this table lods (Level of detail)
+    // Try to fit anglea and angleb into a multiple of this number (delta_res)
+    /*int res = body.lods[lod];
+    float delta_res = TWO_PI / res;
+    anglea = floor(anglea / delta_res) * delta_res;
+    angleb = ceil(angleb / delta_res) * delta_res;*/
 
-    int res = body.lods[lod];
+    float amplitude = body.radius1 - body.radius0;
     float angle_dif = angleb - anglea;
 
-    int vertex_count = ceil(angle_dif / TWO_PI * res);
+    int vertex_count = 500;//ceil(angle_dif / TWO_PI * res);
     float delta_angle = angle_dif / (vertex_count - 1);
 
     float mid_angle = (anglea + angle_dif * 0.5f);

@@ -155,6 +155,7 @@ int main() {
     TraceLog(LOG_INFO, "Hello world!\n");
 
     InitWindow(DEFAULT_WIN_WIDTH, DEFAULT_WIN_HEIGHT, "SolarCorp 2.0");
+    int debug_mode = 0;
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
@@ -169,6 +170,7 @@ int main() {
         if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))  direction.x -= 1.0;
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))  direction.y -= 1.0;
         if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))    direction.y += 1.0;
+        if (IsKeyPressed(KEY_F3)) { debug_mode = !debug_mode; }
 
         if (direction.x != 0.0f || direction.y != 0.0f) {
             direction = vec2d_normalized(direction);
@@ -218,6 +220,7 @@ int main() {
                 if (camera_is_point_in_view(my_camera, planets_positions[i])) {
                     angle0 = 0;
                     angle1 = TWO_PI;
+                    lod = MAX(lod, 2);
                 }  else {
                     vec2d relative_pos = (vec2d) {
                         .x = planets_positions[i].x - my_camera.transform.world_position.x,
@@ -226,8 +229,8 @@ int main() {
                     camera_angular_aperture_from_point(my_camera, relative_pos, &angle0, &angle1);
                 }
 
-                vec2d vertices[planets_generators[i].lods[lod] + 1];
-                vec2d uvs[planets_generators[i].lods[lod] + 1];
+                vec2d vertices[500];
+                vec2d uvs[500];
                 vec2d origin_pos;
                 int vertex_count = planet_generate_2dmesh(planets_generators[i], lod, angle0, angle1, vertices, uvs, &origin_pos);
 
@@ -247,11 +250,18 @@ int main() {
             }
         }
 
-        char text[128];
-        sprintf(text, "Target zoom: %f", my_camera.target_zoom);
-        DrawText(text, 0, 10, 20, WHITE);
-        sprintf(text, "Actual zoom: %f", my_camera.zoom);
-        DrawText(text, 0, 30, 20, WHITE);
+        if (debug_mode) {
+            char text[128];
+            sprintf(text, "FPS: %i", GetFPS());
+            DrawText(text, 10, 0, 30, GREEN);
+            sprintf(text, "Target zoom: %f", my_camera.target_zoom);
+            DrawText(text, 10, 35, 20, RED);
+            sprintf(text, "Actual zoom: %f", my_camera.zoom);
+            DrawText(text, 10, 55, 20, RED);
+            sprintf(text, "LOD: %i", lod);
+            DrawText(text, 10, 75, 20, RED);
+        }
+
         EndDrawing();
     }
 
