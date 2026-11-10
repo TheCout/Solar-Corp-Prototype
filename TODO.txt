@@ -1,3 +1,26 @@
 TO DO:
-- Make camera width and height world space, not screen space.
-- Make the conversion between camera space and screen space.
+
+(Rendering):
+    - Make camera width and height world space, not screen space.
+    - Make the conversion between camera space and screen space.
+    - Orbit trajectory rendering, both elliptical and hyperbolical
+    - Planet mesh uv and texture
+
+(Physics):
+    - Rocket to planet collision detection
+    - Rocket to rocket collision detection
+    - Physics resolution for rockets
+    - Impact physics (explosion, desintegration, etc)
+    - Iterative orbit (propagation, air resistance)
+
+(Logic):
+    - Rocket mesh loader, data loader
+    - Rocket navigation and propulsion math
+    - Sphere of influence system
+
+(General):
+    - Main screen
+    - Sounds
+    - Visual Effects
+    - Saving system
+    - Money mechanics (game economy, rocket market)
