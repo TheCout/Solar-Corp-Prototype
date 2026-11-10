@@ -1,6 +1,10 @@
 #include "math_types.h"
 #include <math.h>
 
+int vec2d_equal(vec2d v1, vec2d v2) {
+    return (v1.x == v2.x && v1.y == v2.y);
+}
+
 vec2d vec2d_addf(Vector2 v1, vec2d v2) {
     return (vec2d){v1.x + v2.x, v1.y + v2.y};
 }

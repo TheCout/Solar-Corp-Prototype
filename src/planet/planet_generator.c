@@ -58,18 +58,10 @@ int planet_generate_2dmesh(
     vec2d* uvs,
     vec2d* origin_pos) {
 
-    // Rail system (Divide circle into multiple small angles defined by the resolution)
-    // * Resolution is defined by this table lods (Level of detail)
-    // Try to fit anglea and angleb into a multiple of this number (delta_res)
-    /*int res = body.lods[lod];
-    float delta_res = TWO_PI / res;
-    anglea = floor(anglea / delta_res) * delta_res;
-    angleb = ceil(angleb / delta_res) * delta_res;*/
-
     float amplitude = body.radius1 - body.radius0;
     float angle_dif = angleb - anglea;
 
-    int vertex_count = 500;//ceil(angle_dif / TWO_PI * res);
+    int vertex_count = 200;
     float delta_angle = angle_dif / (vertex_count - 1);
 
     float mid_angle = (anglea + angle_dif * 0.5f);
@@ -95,20 +87,50 @@ int planet_generate_2dterrain(
 
     float amplitude = body.radius1 - body.radius0;
 
-    int res = body.lods[0];
-
-    float angle_dif = fmod(angleb - anglea, TWO_PI);
-    int vertex_count = ceil(angle_dif / TWO_PI * res);
-    int mid_count = floor((float)vertex_count/2.0f);
+    float angle_dif = angleb - anglea;
+    int vertex_count = 80;
+    int mid_count = vertex_count / 2;
     float delta_angle = angle_dif / (vertex_count - 1);
+
+    float mid_angle = (anglea + angle_dif * 0.5f);
 
     for (int i = 0; i < vertex_count; i++) {
         float radians = (anglea + delta_angle * i);
-        vec2d pos = get_noise_pos(radians, body.radius0, amplitude, 1);
+        vec2d pos = get_noise_pos(radians, body.radius0, amplitude, 0);
         vertices[i] = pos;
         if (i == mid_count) {
             *origin_pos = pos;
         }
     }
     return vertex_count;
+}
+
+int planet_generate_launchpad(
+    planet_generator body,
+    double angle,
+    Vector2* vertices,
+    vec2d* origin_pos) {
+
+    *origin_pos = get_radial_pos(angle, body.radius0 + 92000.0f);
+
+    float length = 10000.f;
+    float height = 3000.f;
+    float hf_length = length / 2.f;
+    float hf_height = height / 2.f;
+    vertices[0] = (Vector2) { .x = -hf_length - height, .y = -hf_height };
+    vertices[1] = (Vector2) { .x = -hf_length, .y = -hf_height };
+    vertices[2] = (Vector2) { .x = -hf_length, .y =  hf_height };
+
+    vertices[3] = (Vector2) { .x = -hf_length, .y = -hf_height };
+    vertices[4] = (Vector2) { .x =  hf_length, .y =  hf_height };
+    vertices[5] = (Vector2) { .x = -hf_length, .y =  hf_height };
+
+    vertices[6] = (Vector2) { .x = -hf_length, .y = -hf_height };
+    vertices[7] = (Vector2) { .x =  hf_length, .y = -hf_height };
+    vertices[8] = (Vector2) { .x =  hf_length, .y =  hf_height };
+
+    vertices[9]  = (Vector2) { .x = hf_length, .y = -hf_height };
+    vertices[10] = (Vector2) { .x = hf_length + height, .y = -hf_height };
+    vertices[11] = (Vector2) { .x = hf_length, .y =  hf_height };
+    return 12;
 }

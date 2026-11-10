@@ -29,4 +29,10 @@ int planet_generate_2dterrain(
     vec2d* vertices,
     vec2d* origin_pos);
 
+int planet_generate_launchpad(
+    planet_generator body,
+    double angle,
+    Vector2* vertices,
+    vec2d* origin_pos);
+
 #endif

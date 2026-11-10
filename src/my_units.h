@@ -9,6 +9,10 @@
     #define TWO_PI 6.28318530717958647692
 #endif
 
+#ifndef HALF_PI
+    #define HALF_PI 1.57079632679
+#endif
+
 #define EARTH_YEAR_PER_SECOND 3.16856781e-8
 #define METER_TO_UNIT 6.6845e-8
 

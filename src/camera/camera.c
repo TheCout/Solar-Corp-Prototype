@@ -2,39 +2,44 @@
 #include "camera.h"
 #include "../my_units.h"
 
-struct camera camera_default() {
-    struct camera cam = (struct camera) {
+struct game_camera camera_default() {
+    struct game_camera cam = (struct game_camera) {
         .ZOOM_SPEED = 0.1,
         .ZOOM_ADJUST_SPEED = 12.0,
         .ZOOM_BASE = 2.8,
         .zoom_exponent = -10,
+
+        .rotation = 0.0
     };
     cam.target_zoom = powf(cam.ZOOM_BASE, cam.zoom_exponent);
     return cam;
 }
 
-void camera_set_target_zoom(struct camera* my_cam, double target_zoom) {
+void camera_set_target_zoom(struct game_camera* my_cam, double target_zoom) {
     my_cam->target_zoom = target_zoom;
     my_cam->zoom_exponent = log(target_zoom) / log(my_cam->ZOOM_BASE);
 }
 
-void camera_zoom_input(struct camera* my_cam, float y) {
+void camera_zoom_input(struct game_camera* my_cam, float y) {
     my_cam->zoom_exponent += y * fabsf(y) * my_cam->ZOOM_SPEED;
     my_cam->target_zoom = powf(my_cam->ZOOM_BASE, my_cam->zoom_exponent);
 }
 
-void camera_update_zoom(struct camera* my_cam, float dt) {
+void camera_update_zoom(struct game_camera* my_cam, float dt) {
     float easing_factor = 1.0f - exp(-my_cam->ZOOM_ADJUST_SPEED * dt);
     my_cam->zoom += (my_cam->target_zoom - my_cam->zoom) * easing_factor;
 }
 
-void camera_update_dimensions(struct camera* my_cam, int screen_width, int screen_height) {
+// TODO:
+// Make camera width and height world space, not screen space.
+// Make the conversion between camera space and screen space
+void camera_update_dimensions(struct game_camera* my_cam, int screen_width, int screen_height) {
     my_cam->width = screen_width / my_cam->zoom;
     my_cam->height = screen_height / my_cam->zoom;
 }
 
 void camera_angular_aperture_from_point(
-    struct camera my_cam,
+    struct game_camera my_cam,
     vec2d pos,
     double* angle0out,
     double* angle1out) {
@@ -103,7 +108,7 @@ void camera_angular_aperture_from_point(
 }
 
 int camera_is_point_in_view(
-    struct camera my_cam,
+    struct game_camera my_cam,
     vec2d circle_world_pos) {
 
     double cl = my_cam.transform.world_position.x - my_cam.width;
@@ -116,7 +121,7 @@ int camera_is_point_in_view(
 }
 
 int camera_circle_to_circle_collision(
-    struct camera my_cam,
+    struct game_camera my_cam,
     vec2d circle_world_pos,
     double circle_radius) {
 

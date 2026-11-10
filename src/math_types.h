@@ -27,6 +27,8 @@ struct transform {
 };
 
 #include <raymath.h>
+int vec2d_equal(vec2d v1, vec2d v2);
+
 vec2d vec2d_addf(Vector2 v1, vec2d v2);
 vec2d vec2d_add(vec2d v1, vec2d v2);
 

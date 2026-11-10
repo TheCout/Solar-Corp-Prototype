@@ -1,6 +1,8 @@
+#include <math.h>
 #include <raylib.h>
 #include <rlgl.h>
 #include <stdio.h>
+#include <assert.h>
 #include "math_types.h"
 #include "my_units.h"
 #include "orbit/orbital_mechanics.h"
@@ -22,31 +24,59 @@ void draw_terrain(
     int vertex_count,
     vec2d origin_pos,
     vec2d cam_pos,
-    double zoom,
+    double enlarge_zoom,
     Color tint) {
     if (vertex_count < 3) return;
     rlBegin(RL_TRIANGLES); // We use RL_TRIANGLES instead of fan!
     rlColor4ub(tint.r, tint.g, tint.b, tint.a);
 
     vec2d centerVertex = {
-        (int)(600 + (vertices[0].x + origin_pos.x - cam_pos.x) * zoom),
-        (int)(400 - (vertices[0].y + origin_pos.y - cam_pos.y) * zoom),
+        (int)(600 + (vertices[0].x + origin_pos.x - cam_pos.x) * enlarge_zoom),
+        (int)(400 - (vertices[0].y + origin_pos.y - cam_pos.y) * enlarge_zoom),
     };
 
     for (int i = 1; i < vertex_count - 1; i++) {
         rlVertex2f(centerVertex.x, centerVertex.y);
 
         rlVertex2f(
-            (600 + (vertices[i].x + origin_pos.x - cam_pos.x) * zoom),
-            (400 - (vertices[i].y + origin_pos.y - cam_pos.y) * zoom)
+            (600 + (vertices[i].x + origin_pos.x - cam_pos.x) * enlarge_zoom),
+            (400 - (vertices[i].y + origin_pos.y - cam_pos.y) * enlarge_zoom)
         );
         rlVertex2f(
-            (600 + (vertices[i + 1].x + origin_pos.x - cam_pos.x) * zoom),
-            (400 - (vertices[i + 1].y + origin_pos.y - cam_pos.y) * zoom)
+            (600 + (vertices[i + 1].x + origin_pos.x - cam_pos.x) * enlarge_zoom),
+            (400 - (vertices[i + 1].y + origin_pos.y - cam_pos.y) * enlarge_zoom)
         );
     }
 
     rlEnd();
+}
+
+void draw_structure(Vector2* vertices,
+    int vertex_count,
+    vec2d origin_pos,
+    double origin_angle,
+    struct game_camera* my_camera,
+    double enlarge_zoom,
+    Color tint) {
+
+    vertex_count = vertex_count - (vertex_count % 3);
+    if (vertex_count < 3) return;
+
+    vec2d cam_pos = my_camera->transform.world_position;
+    float center_x = 600 + (origin_pos.x - cam_pos.x) * enlarge_zoom;
+    float center_y = 400 - (origin_pos.y - cam_pos.y) * enlarge_zoom;
+
+    rlPushMatrix();
+    rlTranslatef(center_x, center_y, 0.0f);
+    rlRotatef((-origin_angle + HALF_PI) * RAD2DEG, 0.0f, 0.0f, 1.0f);
+
+    rlBegin(RL_TRIANGLES);
+    rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+    for (int i = 0; i < vertex_count; i++) {
+        rlVertex2f(vertices[i].x * enlarge_zoom, -vertices[i].y * enlarge_zoom);
+    }
+    rlEnd();
+    rlPopMatrix();
 }
 
 int screen_width, screen_height;
@@ -142,7 +172,7 @@ int main() {
         .lods = {10000, 2000, 400, 20},
     };
 
-    struct camera my_camera = camera_default();
+    struct game_camera my_camera = camera_default();
 
     my_camera.origin_position = &planets_positions[2];
     my_camera.transform = (struct transform) {
@@ -151,6 +181,11 @@ int main() {
     my_camera.zoom = 0.0004;
     camera_set_target_zoom(&my_camera, 0.0004);
     camera_update_dimensions(&my_camera, DEFAULT_WIN_WIDTH, DEFAULT_WIN_HEIGHT);
+
+    // Generate earth's launch pad
+    Vector2 launch_pad_vertices[12];
+    vec2d launch_pad_origin;
+    planet_generate_launchpad(planets_generators[2], HALF_PI, launch_pad_vertices, &launch_pad_origin);
 
     TraceLog(LOG_INFO, "Hello world!\n");
 
@@ -212,7 +247,7 @@ int main() {
         BeginDrawing();
         ClearBackground(BLACK);
 
-        double zoom = half_screen_width / my_camera.width;
+        double enlarge_zoom = screen_width / my_camera.width;
         for (int i = 0; i < 4; i++) {
             // Check for each planet if its visible in the camera
             if (camera_circle_to_circle_collision(my_camera, planets_positions[i], planets_generators[i].radius1)) {
@@ -229,8 +264,8 @@ int main() {
                     camera_angular_aperture_from_point(my_camera, relative_pos, &angle0, &angle1);
                 }
 
-                vec2d vertices[500];
-                vec2d uvs[500];
+                vec2d vertices[200];
+                vec2d uvs[200];
                 vec2d origin_pos;
                 int vertex_count = planet_generate_2dmesh(planets_generators[i], lod, angle0, angle1, vertices, uvs, &origin_pos);
 
@@ -239,12 +274,21 @@ int main() {
                     vertex_count + 1,
                     vec2d_add(origin_pos, planets_positions[i]),
                     my_camera.transform.world_position,
-                    zoom,
+                    enlarge_zoom,
                     planets_descriptors[i].color);
 
+                draw_structure(
+                    launch_pad_vertices,
+                    12,
+                    vec2d_add(launch_pad_origin, planets_positions[i]),
+                    HALF_PI,
+                    &my_camera,
+                    enlarge_zoom,
+                    RAYWHITE);
+
                 DrawCircle(
-                    (int)(half_screen_width + (planets_positions[i].x - my_camera.transform.world_position.x) * zoom),
-                    (int)(half_screen_height - (planets_positions[i].y - my_camera.transform.world_position.y) * zoom),
+                    (int)(half_screen_width + (planets_positions[i].x - my_camera.transform.world_position.x) * enlarge_zoom),
+                    (int)(half_screen_height - (planets_positions[i].y - my_camera.transform.world_position.y) * enlarge_zoom),
                     50,
                     RED);
             }
