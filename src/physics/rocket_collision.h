@@ -3,7 +3,7 @@
 
 #include "custom_manifold.h"
 #include "../planet/planet_generator.h"
-#include "../math_types.h"
+#include "../general_math/math_types.h"
 
 #define POLYGON_MAX_VERTICES 8
 

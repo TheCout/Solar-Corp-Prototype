@@ -1,51 +1,40 @@
 #include <math.h>
+#include <stdlib.h>
 #include "planet_generator.h"
-#include "stb_perlin.h"
-#include "../my_units.h"
+#include "../general_math/double_perlin.h"
 
-float perlin2d(float x, float y) {
-    return stb_perlin_noise3(x, y, 0.0f, 0, 0, 0);
+double get_circular_noise_safe(double radians, double frequency) {
+    // Calculate the exact 2D circle coordinate using double precision
+    double x_exact = cos(radians) * frequency;
+    double y_exact = sin(radians) * frequency;
+    double noise_val = perlin_noise3d(x_exact, y_exact, 0.0);
+    return (noise_val * 0.5) + 0.5;
 }
 
-float get_circular_noise(float radians, float frequency) {
-    // Map 1D radians to a 2D circle
-    float x = cosf(radians) * frequency;
-    float y = sinf(radians) * frequency;
-    // Sample the 2D noise (returns -1.0 to 1.0)
-    float noise_val = perlin2d(x, y);
-    // Normalize the output to the 0.0 - 1.0 range
-    return (noise_val * 0.5f) + 0.5f;
-}
-
-float get_terrain_noise(float radians) {
-
-    float noise1 = get_circular_noise(radians, 8) * 0.5;
-    float noise2 = get_circular_noise(radians, 14) * 0.3;
-    float noise3 = get_circular_noise(radians, noise2 * 40) * 0.15;
-    float noise4 = get_circular_noise(radians, (noise3+noise2) * 200) * 0.042;
+double get_terrain_noise(double radians) {
+    double noise1 = get_circular_noise_safe(radians, 10) * 0.6;
+    double noise2 = get_circular_noise_safe(radians, 100) * 0.35;
+    double noise3 = get_circular_noise_safe(radians, (noise1+noise2) * 350) * 0.022;
+    double noise4 = get_circular_noise_safe(radians, (noise3+noise2) * 6000) * 0.0001;
     return noise1 + noise2 + noise3 + noise4;
 }
 
-float get_terrain_height(float radians, float radius, float amplitude, int lod) {
-    float full_noise = get_terrain_noise(radians);
+double get_terrain_height(double radians, double radius, float amplitude, int lod) {
+    double full_noise = get_terrain_noise(radians);
     switch (lod) {
-        case 1:
-            full_noise += get_circular_noise(radians, 300) * 0.08;
-            break;
         case 0:
-            full_noise += get_circular_noise(radians, 300) * 0.08;
-            full_noise += get_circular_noise(radians, 2500 * (1.f - full_noise)) * full_noise * 0.0013;
+            radius += get_circular_noise_safe(radians, 10000 * full_noise) * 8;
             break;
             }
     return radius + amplitude * full_noise;
 }
 
-vec2d get_radial_pos(float radians, float radius) {
+vec2d get_radial_pos(double radians, double radius) {
     return (vec2d) { cos(radians) * radius, sin(radians) * radius };
 }
 
-vec2d get_noise_pos(float radians, float radius, float amplitude, int lod) {
-    float distance = get_terrain_height(radians, radius, amplitude, lod);
+vec2d get_noise_pos(double radians, double radius, float amplitude, int lod) {
+    double distance = get_terrain_height(radians, radius, amplitude, lod);
     return get_radial_pos(radians, distance);
 }
 
@@ -59,18 +48,18 @@ int planet_generate_2dmesh(
     vec2d* origin_pos) {
 
     float amplitude = body.radius1 - body.radius0;
-    float angle_dif = angleb - anglea;
+    double angle_dif = angleb - anglea;
 
     int vertex_count = 200;
-    float delta_angle = angle_dif / (vertex_count - 1);
+    double delta_angle = angle_dif / (vertex_count - 1);
 
-    float mid_angle = (anglea + angle_dif * 0.5f);
+    double mid_angle = (anglea + angle_dif * 0.5);
     *origin_pos = get_radial_pos(mid_angle, body.radius0);
 
     vertices[0] = (vec2d) { -origin_pos->x, -origin_pos->y };
 
     for (int i = 0; i < vertex_count; i++) {
-        float radians = anglea + delta_angle * i;
+        double radians = anglea + delta_angle * i;
         vec2d pos = get_noise_pos(radians, body.radius0, amplitude, lod);
         vertices[i+1] = (vec2d) { pos.x - origin_pos->x, pos.y - origin_pos->y };
     }
@@ -87,15 +76,15 @@ int planet_generate_2dterrain(
 
     float amplitude = body.radius1 - body.radius0;
 
-    float angle_dif = angleb - anglea;
-    int vertex_count = 80;
+    double angle_dif = angleb - anglea;
+    int vertex_count = 20;
     int mid_count = vertex_count / 2;
-    float delta_angle = angle_dif / (vertex_count - 1);
+    double delta_angle = angle_dif / (vertex_count - 1);
 
-    float mid_angle = (anglea + angle_dif * 0.5f);
+    double mid_angle = (anglea + angle_dif * 0.5f);
 
     for (int i = 0; i < vertex_count; i++) {
-        float radians = (anglea + delta_angle * i);
+        double radians = (anglea + delta_angle * i);
         vec2d pos = get_noise_pos(radians, body.radius0, amplitude, 0);
         vertices[i] = pos;
         if (i == mid_count) {
@@ -111,10 +100,10 @@ int planet_generate_launchpad(
     Vector2* vertices,
     vec2d* origin_pos) {
 
-    *origin_pos = get_radial_pos(angle, body.radius0 + 92000.0f);
+    *origin_pos = get_radial_pos(angle, body.radius0 + 16000.0f);
 
-    float length = 10000.f;
-    float height = 3000.f;
+    float length = 4000.f;
+    float height = 500.f;
     float hf_length = length / 2.f;
     float hf_height = height / 2.f;
     vertices[0] = (Vector2) { .x = -hf_length - height, .y = -hf_height };

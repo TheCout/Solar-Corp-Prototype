@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "../math_types.h"
+#include "../general_math/math_types.h"
 
 struct game_camera {
     float ZOOM_SPEED;

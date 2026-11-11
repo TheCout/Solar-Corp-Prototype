@@ -1,5 +1,5 @@
 #pragma once
-#include "../math_types.h"
+#include "../general_math/math_types.h"
 #include "orbit.h"
 
 orbit svo_generate_orbit(double gravitational_parameter, vec2d position, vec2d velocity);

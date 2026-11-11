@@ -1,7 +1,7 @@
 #ifndef PLANET_GENERATOR_H
 #define PLANET_GENERATOR_H
 
-#include "../math_types.h"
+#include "../general_math/math_types.h"
 
 typedef struct {
     double seed;

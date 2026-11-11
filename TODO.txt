@@ -1,8 +1,10 @@
+DONE:
+    - Make camera width and height world space, not screen space.
+    - Make the conversion between camera space and screen space.
+
 TO DO:
 
 (Rendering):
-    - Make camera width and height world space, not screen space.
-    - Make the conversion between camera space and screen space.
     - Orbit trajectory rendering, both elliptical and hyperbolical
     - Planet mesh uv and texture
 

@@ -34,8 +34,8 @@ void camera_update_zoom(struct game_camera* my_cam, float dt) {
 // Make camera width and height world space, not screen space.
 // Make the conversion between camera space and screen space
 void camera_update_dimensions(struct game_camera* my_cam, int screen_width, int screen_height) {
-    my_cam->width = screen_width / my_cam->zoom;
-    my_cam->height = screen_height / my_cam->zoom;
+    my_cam->width = 1 / my_cam->zoom;
+    my_cam->height = my_cam->width * ((float)screen_height / (float)screen_width);
 }
 
 void camera_angular_aperture_from_point(
@@ -44,8 +44,8 @@ void camera_angular_aperture_from_point(
     double* angle0out,
     double* angle1out) {
 
-    double hw = my_cam.width;
-    double hh = my_cam.height;
+    double hw = my_cam.width / 2;
+    double hh = my_cam.height / 2;
 
     double left_x = -pos.x - hw;
     double top_y = -pos.y - hh;
@@ -126,10 +126,12 @@ int camera_circle_to_circle_collision(
     double circle_radius) {
 
     vec2d my_pos = my_cam.transform.world_position;
+    float hw = my_cam.width / 2.f;
+    float hh = my_cam.height / 2.f;
     float dx = my_pos.x - circle_world_pos.x;
     float dy = my_pos.y - circle_world_pos.y;
     float distance_sqr = (dx * dx) + (dy * dy);
-    float camera_radius = sqrtf((my_cam.width * my_cam.width) + (my_cam.height * my_cam.height));
+    float camera_radius = sqrtf((hw * hw) + (hh * hh));
     float total_radius = camera_radius + circle_radius;
     float total_radius_sqr = total_radius * total_radius;
     return distance_sqr <= total_radius_sqr;

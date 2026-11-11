@@ -1,6 +1,6 @@
 #pragma once
 #include "orbit.h"
-#include "../math_types.h"
+#include "../general_math/math_types.h"
 
 // HELPER STRUCTURES
 

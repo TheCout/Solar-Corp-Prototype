@@ -32,7 +32,8 @@ FetchContent_MakeAvailable(raylib)
 # Replace 'main.c' with your actual source files
 add_executable(my_game
     main.c
-    math_types.c
+    general_math/math_types.c
+    general_math/double_perlin.c
     physics/custom_manifold.c
     physics/rocket_collision.c
     planet/planet_generator.c

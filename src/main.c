@@ -3,8 +3,8 @@
 #include <rlgl.h>
 #include <stdio.h>
 #include <assert.h>
-#include "math_types.h"
 #include "my_units.h"
+#include "general_math/math_types.h"
 #include "orbit/orbital_mechanics.h"
 #include "camera/camera.h"
 #include "planet/planet_generator.h"
@@ -162,8 +162,8 @@ int main() {
         .lods = {10000, 2000, 400, 20},
     };
     planets_generators[2] = (planet_generator) { // Earth
-        .radius0 = 6208137,
-        .radius1 = 6378137,
+        .radius0 = 6351704.3,
+        .radius1 = 6384415.98,
         .lods = {50000, 2000, 200, 20},
     };
     planets_generators[3] = (planet_generator) { // Mars
@@ -178,8 +178,8 @@ int main() {
     my_camera.transform = (struct transform) {
         .local_position = {6378137, 0}
     };
-    my_camera.zoom = 0.0004;
-    camera_set_target_zoom(&my_camera, 0.0004);
+    my_camera.zoom = 0.000002;
+    camera_set_target_zoom(&my_camera, 0.000002);
     camera_update_dimensions(&my_camera, DEFAULT_WIN_WIDTH, DEFAULT_WIN_HEIGHT);
 
     // Generate earth's launch pad
@@ -209,8 +209,8 @@ int main() {
 
         if (direction.x != 0.0f || direction.y != 0.0f) {
             direction = vec2d_normalized(direction);
-            my_camera.transform.local_position.x += direction.x * 1000 / my_camera.zoom * dt;
-            my_camera.transform.local_position.y += direction.y * 1000 / my_camera.zoom * dt;
+            my_camera.transform.local_position.x += direction.x / my_camera.zoom * dt;
+            my_camera.transform.local_position.y += direction.y / my_camera.zoom * dt;
         }
 
         if (my_camera.origin_position) {
@@ -236,11 +236,11 @@ int main() {
         camera_update_dimensions(&my_camera, screen_width, screen_height);
 
         int lod = 3;
-        if (my_camera.zoom > 0.0025) {
+        if (my_camera.zoom > 1.0E-04) {
             lod = 0;
-        } else if (my_camera.zoom > 0.00075) {
+        } else if (my_camera.zoom > 3.0E-05) {
             lod = 1;
-        } else if (my_camera.zoom > 0.00003) {
+        } else if (my_camera.zoom > 2.0E-07) {
             lod = 2;
         }
 
@@ -251,6 +251,8 @@ int main() {
         for (int i = 0; i < 4; i++) {
             // Check for each planet if its visible in the camera
             if (camera_circle_to_circle_collision(my_camera, planets_positions[i], planets_generators[i].radius1)) {
+                DrawText("VISIBLE", 200, 300, 200, MAGENTA);
+
                 double angle0, angle1;
                 if (camera_is_point_in_view(my_camera, planets_positions[i])) {
                     angle0 = 0;
@@ -269,14 +271,6 @@ int main() {
                 vec2d origin_pos;
                 int vertex_count = planet_generate_2dmesh(planets_generators[i], lod, angle0, angle1, vertices, uvs, &origin_pos);
 
-                draw_terrain(
-                    vertices,
-                    vertex_count + 1,
-                    vec2d_add(origin_pos, planets_positions[i]),
-                    my_camera.transform.world_position,
-                    enlarge_zoom,
-                    planets_descriptors[i].color);
-
                 draw_structure(
                     launch_pad_vertices,
                     12,
@@ -285,6 +279,14 @@ int main() {
                     &my_camera,
                     enlarge_zoom,
                     RAYWHITE);
+
+                draw_terrain(
+                    vertices,
+                    vertex_count + 1,
+                    vec2d_add(origin_pos, planets_positions[i]),
+                    my_camera.transform.world_position,
+                    enlarge_zoom,
+                    planets_descriptors[i].color);
 
                 DrawCircle(
                     (int)(half_screen_width + (planets_positions[i].x - my_camera.transform.world_position.x) * enlarge_zoom),
@@ -298,17 +300,27 @@ int main() {
             char text[128];
             sprintf(text, "FPS: %i", GetFPS());
             DrawText(text, 10, 0, 30, GREEN);
-            sprintf(text, "Target zoom: %f", my_camera.target_zoom);
+            sprintf(text, "Target zoom: %.6e", my_camera.target_zoom);
             DrawText(text, 10, 35, 20, RED);
-            sprintf(text, "Actual zoom: %f", my_camera.zoom);
+            sprintf(text, "Actual zoom: %.6e", my_camera.zoom);
             DrawText(text, 10, 55, 20, RED);
             sprintf(text, "LOD: %i", lod);
             DrawText(text, 10, 75, 20, RED);
+
+            sprintf(text, "Cam pos: {x: %f, y: %f}",
+                my_camera.transform.local_position.x, my_camera.transform.local_position.y);
+            DrawText(text, 10, 95, 20, RED);
+
+            sprintf(text, "Cam dimensions: {width: %f, height: %f}",
+                my_camera.width, my_camera.height);
+            DrawText(text, 10, 115, 20, RED);
+
+            sprintf(text, "Enlarge zoom: %f", enlarge_zoom);
+            DrawText(text, 10, 135, 20, RED);
         }
 
         EndDrawing();
     }
-
     CloseWindow();
     return 0;
 }
