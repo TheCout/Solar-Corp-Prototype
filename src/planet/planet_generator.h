@@ -21,6 +21,8 @@ int planet_generate_2dmesh(
     vec2d* uvs,
     vec2d* origin_pos);
 
+// Generates a section of a planet's terrain as a 2d mesh
+// Angle B must be larger than Angle A
 // Returns vertex count
 int planet_generate_2dterrain(
     planet_generator body,

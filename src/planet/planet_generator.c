@@ -1,5 +1,4 @@
 #include <math.h>
-#include <stdlib.h>
 #include "planet_generator.h"
 #include "../general_math/double_perlin.h"
 

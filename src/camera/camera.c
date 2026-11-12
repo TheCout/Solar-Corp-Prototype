@@ -30,9 +30,6 @@ void camera_update_zoom(struct game_camera* my_cam, float dt) {
     my_cam->zoom += (my_cam->target_zoom - my_cam->zoom) * easing_factor;
 }
 
-// TODO:
-// Make camera width and height world space, not screen space.
-// Make the conversion between camera space and screen space
 void camera_update_dimensions(struct game_camera* my_cam, int screen_width, int screen_height) {
     my_cam->width = 1 / my_cam->zoom;
     my_cam->height = my_cam->width * ((float)screen_height / (float)screen_width);

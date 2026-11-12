@@ -38,6 +38,7 @@ add_executable(my_game
     physics/rocket_collision.c
     planet/planet_generator.c
     camera/camera.c
+    orbit/orbit_renderer.c
     orbit/orbital_mechanics.c
     orbit/state_vector_orbit.c
     orbit/hke-sdg/keplerh.c
